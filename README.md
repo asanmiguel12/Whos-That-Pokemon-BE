@@ -36,8 +36,3 @@ The backend will start on `http://localhost:8082` by default. API endpoints can 
 - `src/main/resources/images/pokemonImages` - Pokémon images
 - `src/main/resources/application.properties` - Application configuration
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
-
-## License
-[MIT](LICENSE)
