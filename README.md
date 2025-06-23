@@ -29,7 +29,7 @@ Whos-That-Pokemon-BE is a backend service for a Pokémon guessing game. It serve
    ```
 
 ## Usage
-The backend will start on `http://localhost:8080` by default. API endpoints can be accessed to retrieve Pokémon data and images.
+The backend will start on `http://localhost:8082` by default. API endpoints can be accessed to retrieve Pokémon data and images.
 
 ## Project Structure
 - `src/main/java` - Java source code
