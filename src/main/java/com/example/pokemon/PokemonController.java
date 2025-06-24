@@ -1,5 +1,9 @@
 package com.example.pokemon;
 
+import java.io.RandomAccessFile;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -12,40 +16,70 @@ public class PokemonController {
 
     @GetMapping
     public List<String> getAllPokemon() {
-        return originalPokemon;
+        return allPokemon;
     }
 
     @PostMapping("/checkPokemon/{name}")
     public Map<String, Boolean> checkName(@RequestBody NameCheckRequest request) {
-        boolean isValid = originalPokemon.stream()
+        boolean isValid = allPokemon.stream()
             .anyMatch(p -> p.equalsIgnoreCase(request.getName().trim()));
         return Map.of("valid", isValid);
     }
 
     @GetMapping("/checkPokemon/{name}")
     public Map<String, Boolean> checkNameGet(@PathVariable String name) {
-        boolean isValid = originalPokemon.stream()
+        boolean isValid = allPokemon.stream()
             .anyMatch(p -> p.equalsIgnoreCase(name.trim()));
         return Map.of("valid", isValid);
     }
 
     @GetMapping("/checkRandomPokemon/{guess}")
-    public Map<String, Object> checkRandomPokemon(@PathVariable String guess) {
-        int idx = (int) (Math.random() * originalPokemon.size());
-        String randomPokemon = originalPokemon.get(idx);
-        boolean isCorrect = randomPokemon.equalsIgnoreCase(guess.trim());
-        return Map.of("correct", isCorrect, "randomPokemon", randomPokemon);
-    }
+    public Map<String, Object> checkRandomPokemon(@PathVariable Map<String, String> request) {
+        String guess = request.get("guess");
 
-    @PostMapping("/validatePokemon")
-    public Map<String, Boolean> validatePokemon(@RequestBody Map<String, String> request) {
-        String generatedPokemon = request.get("generatedPokemon");
-        String userGuess = request.get("userGuess");
+        if (guess == null || guess.trim().isEmpty()) {
+            return Map.of("error", "Invalid input");
+        }
 
-        boolean isCorrect = generatedPokemon != null && userGuess != null &&
-            generatedPokemon.equalsIgnoreCase(userGuess.trim());
+        try {
+            // Define the file path
+            String filePath = "stored_pokemon.txt";
 
-        return Map.of("correct", isCorrect);
+            // Read the last line of the file
+            String storedRandomPokemon;
+            try (RandomAccessFile file = new RandomAccessFile(filePath, "r")) {
+                long fileLength = file.length();
+                if (fileLength == 0) {
+                    return Map.of("error", "No Pokémon stored");
+                }
+
+                long pointer = fileLength - 1;
+                file.seek(pointer);
+
+                // Move backwards to find the start of the last line
+                while (pointer > 0) {
+                    pointer--;
+                    file.seek(pointer);
+                    if (file.readByte() == '\n') {
+                        break;
+                    }
+                }
+
+                // Read the last line
+                storedRandomPokemon = file.readLine();
+            }
+
+            if (storedRandomPokemon == null || storedRandomPokemon.trim().isEmpty()) {
+                return Map.of("error", "No Pokémon stored");
+            }
+
+            // Compare the guess with the stored Pokémon
+            boolean isCorrect = storedRandomPokemon.equalsIgnoreCase(guess.trim());
+            return Map.of("correct", isCorrect, "storedRandomPokemon", storedRandomPokemon);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Map.of("error", "Error reading stored Pokémon");
+        }
     }
 
     @PostMapping("/storeRandomPokemon/{name}")
@@ -54,14 +88,24 @@ public class PokemonController {
             return ResponseEntity.badRequest().body("Invalid data received");
         }
 
-        // Log the received data
-        System.out.println("Received Pokémon Name: " + name);
+        // Remove ".png" from the name if present
+        name = name.replace(".png", "");
 
-        // Process the data (e.g., store it, validate it, etc.)
-        return ResponseEntity.ok("Pokemon received successfully");
+        try {
+            // Define the file path
+            String filePath = "stored_pokemon.txt";
+
+            // Append only the Pokémon name to the file
+            Files.write(Paths.get(filePath), (name + System.lineSeparator()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+
+            return ResponseEntity.ok("Pokemon name stored successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error storing Pokemon name");
+        }
     }
 
-    private final List<String> originalPokemon = List.of(
+    private final List<String> allPokemon = List.of(
         "Bulbasaur", "Ivysaur", "Venusaur", "Charmander", "Charmeleon", "Charizard", "Squirtle", "Wartortle", "Blastoise", "Caterpie",
         "Metapod", "Butterfree", "Weedle", "Kakuna", "Beedrill", "Pidgey", "Pidgeotto", "Pidgeot", "Rattata", "Raticate",
         "Spearow", "Fearow", "Ekans", "Arbok", "Pikachu", "Raichu", "Sandshrew", "Sandslash", "Nidoran♀", "Nidorina",
