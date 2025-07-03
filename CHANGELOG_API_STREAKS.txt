@@ -1,0 +1,26 @@
+Change Log - PokemonController.java
+===================================
+
+Date: 2025-07-03
+
+1. Added API endpoint to log highest streaks:
+   - POST /api/pokemon/logStreak
+   - Accepts 'username' and 'streak' as request parameters.
+   - Reads or creates 'streaks.txt' to store highest streaks per user in the format 'username:streak'.
+   - Updates the user's streak only if the new streak is higher than the previous one.
+   - Handles file reading, updating, and writing logic.
+
+2. Added API endpoint to retrieve all highest streaks:
+   - GET /api/pokemon/highestStreaks
+   - Reads 'streaks.txt' and returns a map of usernames to their highest streaks.
+
+3. Fixed for-each loop for writing streaks:
+   - Replaced 'var' with 'Map.Entry<String, Integer>' for compatibility.
+   - Used 'entry.getKey()' and 'entry.getValue()' to avoid IDE errors.
+
+4. General error handling and input validation:
+   - Added checks for null/empty usernames and negative streaks.
+   - Added try-catch blocks for file operations.
+
+All changes are in 'PokemonController.java'.
+

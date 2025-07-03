@@ -66,4 +66,60 @@ public class PokemonController {
             return ResponseEntity.status(500).body("Error storing Pokemon name");
         }
     }
+
+    @PostMapping("/logStreak")
+    public ResponseEntity<String> logStreak(@RequestParam String username, @RequestParam int streak) {
+        if (username == null || username.trim().isEmpty() || streak < 0) {
+            return ResponseEntity.badRequest().body("Invalid username or streak");
+        }
+        String filePath = "streaks.txt";
+        try {
+            java.util.Map<String, Integer> streaks = new java.util.HashMap<>();
+            java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+            if (java.nio.file.Files.exists(path)) {
+                java.util.List<String> lines = java.nio.file.Files.readAllLines(path);
+                for (String line : lines) {
+                    String[] parts = line.split(":");
+                    if (parts.length == 2) {
+                        streaks.put(parts[0], Integer.parseInt(parts[1]));
+                    }
+                }
+            }
+            // Update if new streak is higher
+            streaks.put(username, Math.max(streaks.getOrDefault(username, 0), streak));
+            // Write all streaks back
+            StringBuilder sb = new StringBuilder();
+            for (Map.Entry<String, Integer> entry : streaks.entrySet()) {
+                sb.append(entry.getKey()).append(":").append(entry.getValue()).append(System.lineSeparator());
+            }
+            java.nio.file.Files.write(path, sb.toString().getBytes(), java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+            return ResponseEntity.ok("Streak logged successfully");
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error logging streak");
+        }
+    }
+
+    // Optional: Endpoint to get all highest streaks
+    @GetMapping("/highestStreaks")
+    public ResponseEntity<Map<String, Integer>> getHighestStreaks() {
+        String filePath = "streaks.txt";
+        java.util.Map<String, Integer> streaks = new java.util.HashMap<>();
+        try {
+            java.nio.file.Path path = java.nio.file.Paths.get(filePath);
+            if (java.nio.file.Files.exists(path)) {
+                java.util.List<String> lines = java.nio.file.Files.readAllLines(path);
+                for (String line : lines) {
+                    String[] parts = line.split(":");
+                    if (parts.length == 2) {
+                        streaks.put(parts[0], Integer.parseInt(parts[1]));
+                    }
+                }
+            }
+            return ResponseEntity.ok(streaks);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(null);
+        }
+    }
 }
