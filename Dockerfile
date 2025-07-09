@@ -7,31 +7,18 @@ WORKDIR /app
 # Copy both package.json and package-lock.json
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci || npm install
+RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
 
-# Copy node_modules from deps stage
+
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build the Next.js application
-RUN npm run build
-
-# Install Java (OpenJDK 17 for Spring Boot compatibility)
-RUN apk add --no-cache openjdk17
-ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-ENV PATH="$JAVA_HOME/bin:$PATH"
-
-# Verify Java installation
-RUN java -version
-
-# Run Gradle build
-RUN ./gradlew build
-
 ENV NEXT_TELEMETRY_DISABLED 1
+
+RUN ./gradlew build
 
 FROM base AS runner
 WORKDIR /app
@@ -42,7 +29,6 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy built Next.js files
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 COPY --from=builder /app/node_modules ./node_modules
