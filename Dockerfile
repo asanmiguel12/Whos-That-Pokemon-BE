@@ -4,17 +4,22 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
+# Copy both package.json and package-lock.json
 COPY package*.json ./
+
+# Run npm install if package-lock.json is missing
+RUN if [ ! -f package-lock.json ]; then npm install; fi
+
 RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY src .
+COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
-RUN npm run build
+RUN ./gradlew build
 
 FROM base AS runner
 WORKDIR /app
@@ -32,8 +37,8 @@ COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
 
-EXPOSE 3000
+EXPOSE 8082
 
-ENV PORT 3000
+ENV PORT 8082
 
-CMD ["./gradlew ", "bootRun"]
+CMD ["./gradlew", "bootRun"]
