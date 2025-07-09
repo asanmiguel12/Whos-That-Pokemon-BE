@@ -7,13 +7,13 @@ WORKDIR /app
 # Copy both package.json and package-lock.json
 COPY package*.json ./
 
-# Run npm install if package-lock.json is missing
-RUN if [ ! -f package-lock.json ]; then npm install; fi
-
-RUN npm ci
+# Install dependencies
+RUN npm ci || npm install
 
 FROM base AS builder
 WORKDIR /app
+
+# Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
@@ -37,8 +37,8 @@ COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
 
-EXPOSE 8082
+EXPOSE 8081
 
-ENV PORT 8082
+ENV PORT 8081
 
 CMD ["./gradlew", "bootRun"]
