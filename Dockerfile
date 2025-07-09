@@ -25,6 +25,9 @@ RUN apk add --no-cache openjdk17
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ENV PATH="$JAVA_HOME/bin:$PATH"
 
+# Verify Java installation
+RUN java -version
+
 # Run Gradle build
 RUN ./gradlew build
 
