@@ -1,0 +1,13 @@
+{
+  "name": "whosthatpokemon-be",
+  "version": "1.0.0",
+  "description": "Whos-That-Pokemon-BE is a backend service for a Pokémon guessing game. It serves Pokémon logic and user input to a frontend client.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
