@@ -13,12 +13,18 @@ RUN npm ci || npm install
 FROM base AS builder
 WORKDIR /app
 
+# Install Java (OpenJDK 17 for Spring Boot compatibility)
+RUN apk add --no-cache openjdk17
+ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+ENV PATH="$JAVA_HOME/bin:$PATH"
+
 # Copy node_modules from deps stage
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Run Gradle build
 RUN ./gradlew build
 
 FROM base AS runner
