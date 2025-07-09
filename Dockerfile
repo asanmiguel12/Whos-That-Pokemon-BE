@@ -47,8 +47,8 @@ COPY --from=builder /app/package.json ./package.json
 
 USER nextjs
 
-EXPOSE 8081
+EXPOSE 8082
 
-ENV PORT 8081
+ENV PORT 8082
 
 CMD ["./gradlew", "bootRun"]
