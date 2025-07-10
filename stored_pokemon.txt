@@ -255,3 +255,5 @@ Graveler
 Ekans
 Ninetales
 Eevee
+Electrode
+Chansey
