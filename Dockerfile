@@ -34,11 +34,14 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
+RUN apk add --no-cache openjdk17
+RUN ls /usr/lib/jvm/  # Verify the correct directory
 ENV JAVA_HOME=/usr/lib/jvm/java-17-openjdk
 ENV PATH=$JAVA_HOME/bin:$PATH
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
+RUN mkdir -p /app/.gradle && chown -R nextjs:nodejs /app/.gradle
 
 # Copy the built files and gradlew script
 COPY --from=builder /app/node_modules ./node_modules
