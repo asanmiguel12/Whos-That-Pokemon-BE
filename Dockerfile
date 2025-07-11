@@ -22,6 +22,9 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED 1
 
+# Ensure gradlew has execute permissions
+RUN chmod +x ./gradlew
+
 RUN ./gradlew build
 RUN npm run build
 
@@ -34,8 +37,11 @@ ENV NEXT_TELEMETRY_DISABLED 1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Copy the built files and gradlew script
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/gradlew ./gradlew
+COPY --from=builder /app/ ./  # Ensure all necessary files are copied
 
 USER nextjs
 
