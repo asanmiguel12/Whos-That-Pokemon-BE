@@ -41,7 +41,7 @@ RUN adduser --system --uid 1001 nextjs
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/gradlew ./gradlew
-COPY --from=builder /app/ ./  # Ensure all necessary files are copied
+COPY --from=builder /app/ ./
 
 USER nextjs
 
