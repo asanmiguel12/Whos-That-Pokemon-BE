@@ -41,7 +41,6 @@ ENV PATH=$JAVA_HOME/bin:$PATH
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
-RUN mkdir -p /app/.gradle && chown -R nextjs:nodejs /app/.gradle
 
 # Copy the built files and gradlew script
 COPY --from=builder /app/node_modules ./node_modules
@@ -49,6 +48,7 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/gradlew ./gradlew
 COPY --from=builder /app/ ./
 
+RUN mkdir -p /app/.gradle && chown -R nextjs:nodejs /app/.gradle
 USER nextjs
 
 EXPOSE 8082
