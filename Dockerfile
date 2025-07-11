@@ -43,4 +43,4 @@ EXPOSE 8082
 
 ENV PORT 8082
 
-CMD ["./gradlew", "bootRun"]
+CMD ["sh", "./gradlew", "bootRun"]
