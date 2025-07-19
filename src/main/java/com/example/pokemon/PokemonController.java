@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/pokemon")
+@CrossOrigin("*")
+@RequestMapping("api/pokemon")
 public class PokemonController {
 
     @GetMapping("/checkRandomPokemon/{guess}")
