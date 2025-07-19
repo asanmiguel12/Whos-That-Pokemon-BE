@@ -51,8 +51,8 @@ COPY --from=builder /app/ ./
 RUN mkdir -p /app/.gradle && chown -R nextjs:nodejs /app/.gradle
 USER nextjs
 
-EXPOSE 8082
+EXPOSE 10000
 
-ENV PORT=8082
+ENV PORT=10000
 
 CMD ["sh", "./gradlew", "bootRun"]
