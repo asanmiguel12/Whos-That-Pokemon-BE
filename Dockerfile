@@ -46,7 +46,7 @@ WORKDIR /app
 COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
 
 # (Optional) expose a default in case you run locally
-EXPOSE 8080
+EXPOSE 8082
 
 # Use Render’s $PORT (falling back to 8080 if not set)
-ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -jar app.jar --server.port=${PORT:-8080}"]
+ENTRYPOINT ["sh","-c","exec java $JAVA_OPTS -jar app.jar --server.port=${PORT:-8082}"]
