@@ -68,7 +68,7 @@ public class PokemonController {
         }
     }
 
-    @PostMapping("/logStreak")
+    @PostMapping("/logStreak/{username}/{streakCount}")
     public ResponseEntity<String> logStreak(@RequestParam String username, @RequestParam int streak) {
         if (username == null || username.trim().isEmpty() || streak < 0) {
             return ResponseEntity.badRequest().body("Invalid username or streak");

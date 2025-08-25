@@ -31,8 +31,13 @@ Whos-That-Pokemon-BE is a backend service for a Pokémon guessing game. It serve
 ## Usage
 The backend will start on `http://localhost:8082` by default. API endpoints can be accessed to retrieve Pokémon data and images.
 
+## API Call & User Tracking
+
+- **Spring Boot Actuator** is enabled for basic metrics and request tracing.
+- **Custom Logging Filter** logs each API request, including user info (if authenticated) and endpoint accessed.
+- For external monitoring, consider integrating APMs like New Relic, Datadog, or Prometheus/Grafana.
+
 ## Project Structure
 - `src/main/java` - Java source code
 - `src/main/resources/images/pokemonImages` - Pokémon images
 - `src/main/resources/application.properties` - Application configuration
-
