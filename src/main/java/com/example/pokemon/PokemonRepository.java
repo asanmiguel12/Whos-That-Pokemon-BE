@@ -1,9 +1,11 @@
 package com.example.pokemon;
 
-import org.springframework.stereotype.Repository;
 
-@Repository
-public class PokemonRepository {
-    // Placeholder for database operations
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface PokemonRepository extends JpaRepository<Pokemon, Long> {
+    Pokemon findTopByOrderByIdDesc();
 }
+
 

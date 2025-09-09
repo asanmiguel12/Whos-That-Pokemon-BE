@@ -1,66 +1,51 @@
 package com.example.pokemon;
 
-import java.io.RandomAccessFile;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+
 
 @RestController
 @CrossOrigin("*")
 @RequestMapping("api/pokemon")
 public class PokemonController {
 
+    @Autowired
+    private PokemonRepository pokemonRepository;
+
     @GetMapping("/checkRandomPokemon/{guess}")
-    public Map<String, Object> checkRandomPokemon(@PathVariable Map<String, String> request) {
-        String guess = request.get("guess");
+    public Map<String, Object> checkRandomPokemon(@PathVariable String guess) {
         if (guess == null || guess.trim().isEmpty()) {
             return Map.of("error", "Invalid input");
         }
+    
         try {
-            String filePath = "stored_pokemon.txt";
-            String storedRandomPokemon;
-            try (RandomAccessFile file = new RandomAccessFile(filePath, "r")) {
-                long fileLength = file.length();
-                if (fileLength == 0) {
-                    return Map.of("error", "No Pokémon stored");
-                }
-                long pointer = fileLength - 1;
-                file.seek(pointer);
-                while (pointer > 0) {
-                    pointer--;
-                    file.seek(pointer);
-                    if (file.readByte() == '\n') {
-                        break;
-                    }
-                }
-                storedRandomPokemon = file.readLine();
-            }
-            if (storedRandomPokemon == null || storedRandomPokemon.trim().isEmpty()) {
+            Pokemon latest = pokemonRepository.findTopByOrderByIdDesc();
+            if (latest == null || latest.getName() == null || latest.getName().trim().isEmpty()) {
                 return Map.of("error", "No Pokémon stored");
             }
-            // Compare the guess with the stored Pokémon
-            boolean isCorrect = storedRandomPokemon.equalsIgnoreCase(guess.trim());
-            return Map.of("correct", isCorrect, "storedRandomPokemon", storedRandomPokemon);
+    
+            boolean isCorrect = latest.getName().equalsIgnoreCase(guess.trim());
+            return Map.of("correct", isCorrect, "storedRandomPokemon", latest.getName());
         } catch (Exception e) {
             e.printStackTrace();
             return Map.of("error", "Error reading stored Pokémon");
         }
     }
-
+    
     @PostMapping("/storeRandomPokemon/{name}")
-    public ResponseEntity<String> receiveRandomPokemon(@PathVariable String name) {
+    public ResponseEntity<String> storeRandomPokemon(@PathVariable String name) {
         if (name == null || name.trim().isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid data received");
         }
-        // Remove ".png" from the name if present
+    
         name = name.replace(".png", "");
+    
         try {
-            String filePath = "stored_pokemon.txt";
-            // Append only the Pokémon name to the file
-            Files.write(Paths.get(filePath), (name + System.lineSeparator()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            Pokemon pokemon = new Pokemon();
+            pokemon.setName(name);
+            pokemonRepository.save(pokemon);
             return ResponseEntity.ok("Pokemon name stored successfully");
         } catch (Exception e) {
             e.printStackTrace();
@@ -68,6 +53,20 @@ public class PokemonController {
         }
     }
 
+    @GetMapping("/latestPokemon")
+    public ResponseEntity<Map<String, String>> getLatestPokemon() {
+        try {
+            Pokemon latest = pokemonRepository.findTopByOrderByIdDesc();
+            if (latest == null) {
+                return ResponseEntity.ok(Map.of("message", "No Pokémon found"));
+            }
+            return ResponseEntity.ok(Map.of("latestPokemon", latest.getName()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Error retrieving Pokémon"));
+        }
+    }
+    
     @PostMapping("/logStreak/{username}/{streakCount}")
     public ResponseEntity<String> logStreak(@RequestParam String username, @RequestParam int streak) {
         if (username == null || username.trim().isEmpty() || streak < 0) {
