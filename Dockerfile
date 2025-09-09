@@ -10,7 +10,7 @@ COPY --chown=gradle:gradle build.gradle .
 COPY --chown=gradle:gradle src src
 
 # Build the fat JAR (skip tests for speed; remove -x test if you want them)
-RUN ./gradlew bootJar -x test --no-daemon
+RUN chmod +x gradlew && ./gradlew bootJar -x test --no-daemon --stacktrace --info -Dorg.gradle.console=plain
 
 # ─── Stage 2: runtime ───────────────────────────────────────────────────────
 FROM eclipse-temurin:17-jdk-jammy
