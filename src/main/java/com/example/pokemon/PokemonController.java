@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
-
+import java.util.HashMap;
 
 @RestController
 @CrossOrigin("*")
@@ -13,6 +13,9 @@ public class PokemonController {
 
     @Autowired
     private PokemonRepository pokemonRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/checkRandomPokemon/{guess}")
     public Map<String, Object> checkRandomPokemon(@PathVariable String guess) {
@@ -67,32 +70,23 @@ public class PokemonController {
         }
     }
     
-    @PostMapping("/logStreak/{username}/{streakCount}")
+    @PostMapping("/logStreak")
     public ResponseEntity<String> logStreak(@RequestParam String username, @RequestParam int streak) {
         if (username == null || username.trim().isEmpty() || streak < 0) {
             return ResponseEntity.badRequest().body("Invalid username or streak");
         }
-        String filePath = "streaks.txt";
+        
         try {
-            java.util.Map<String, Integer> streaks = new java.util.HashMap<>();
-            java.nio.file.Path path = java.nio.file.Paths.get(filePath);
-            if (java.nio.file.Files.exists(path)) {
-                java.util.List<String> lines = java.nio.file.Files.readAllLines(path);
-                for (String line : lines) {
-                    String[] parts = line.split(":");
-                    if (parts.length == 2) {
-                        streaks.put(parts[0], Integer.parseInt(parts[1]));
-                    }
-                }
+            // Find existing user or create new one
+            User user = userRepository.findByUsername(username).orElse(new User());
+            user.setUsername(username);
+            
+            // Update streak only if new streak is higher
+            if (streak > user.getHighestStreak()) {
+                user.setHighestStreak(streak);
             }
-            // Update if new streak is higher
-            streaks.put(username, Math.max(streaks.getOrDefault(username, 0), streak));
-            // Write all streaks back
-            StringBuilder sb = new StringBuilder();
-            for (Map.Entry<String, Integer> entry : streaks.entrySet()) {
-                sb.append(entry.getKey()).append(":").append(entry.getValue()).append(System.lineSeparator());
-            }
-            java.nio.file.Files.write(path, sb.toString().getBytes(), java.nio.file.StandardOpenOption.CREATE, java.nio.file.StandardOpenOption.TRUNCATE_EXISTING);
+            
+            userRepository.save(user);
             return ResponseEntity.ok("Streak logged successfully");
         } catch (Exception e) {
             e.printStackTrace();
@@ -100,26 +94,36 @@ public class PokemonController {
         }
     }
 
-    // Optional: Endpoint to get all highest streaks
+    // Get all highest streaks from database
     @GetMapping("/highestStreaks")
     public ResponseEntity<Map<String, Integer>> getHighestStreaks() {
-        String filePath = "streaks.txt";
-        java.util.Map<String, Integer> streaks = new java.util.HashMap<>();
         try {
-            java.nio.file.Path path = java.nio.file.Paths.get(filePath);
-            if (java.nio.file.Files.exists(path)) {
-                java.util.List<String> lines = java.nio.file.Files.readAllLines(path);
-                for (String line : lines) {
-                    String[] parts = line.split(":");
-                    if (parts.length == 2) {
-                        streaks.put(parts[0], Integer.parseInt(parts[1]));
-                    }
-                }
-            }
+            java.util.Map<String, Integer> streaks = new java.util.HashMap<>();
+            userRepository.findAll().forEach(user -> 
+                streaks.put(user.getUsername(), user.getHighestStreak())
+            );
             return ResponseEntity.ok(streaks);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(500).body(null);
+        }
+    }
+    
+    // Get specific user's streak
+    @GetMapping("/user/{username}/streak")
+    public ResponseEntity<Map<String, Object>> getUserStreak(@PathVariable String username) {
+        try {
+            return userRepository.findByUsername(username)
+                .map(user -> {
+                    Map<String, Object> response = new HashMap<>();
+                    response.put("username", user.getUsername());
+                    response.put("highestStreak", user.getHighestStreak());
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("error", "Error retrieving user streak"));
         }
     }
 }

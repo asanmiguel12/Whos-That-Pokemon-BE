@@ -13,7 +13,7 @@ public class UserController {
         this.authService = authService;
     }
 
-    @PostMapping("/login")
+    @PostMapping("/user")
     public String login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
