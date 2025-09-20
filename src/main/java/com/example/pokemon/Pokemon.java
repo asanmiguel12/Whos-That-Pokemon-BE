@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "pokemon_names")
 public class Pokemon {
+    // Test comment for Git auto-staging
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -16,4 +17,5 @@ public class Pokemon {
 
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
+
 }
